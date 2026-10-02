@@ -1,0 +1,18 @@
+# Model weights (too large for git - retrain locally)
+*.zip
+*.pkl
+*.npy
+*.npz
+
+# Checkpoints
+g1_*_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+.DS_Store
+Thumbs.db

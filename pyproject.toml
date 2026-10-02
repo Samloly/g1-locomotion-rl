@@ -1,0 +1,29 @@
+[project]
+name = "g1-locomotion-rl"
+version = "0.1.0"
+description = "Train a Unitree G1 humanoid to walk with PPO in MuJoCo"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "gymnasium>=1.0,<2.0",
+    "mujoco>=3.2,<4.0",
+    "numpy>=1.26,<3.0",
+    "rich>=15.0.0",
+    "stable-baselines3>=2.4,<3.0",
+    "torch>=2.0,<3.0",
+    "tqdm>=4.66,<5.0",
+]
+
+[tool.uv]
+# This repository contains scripts rather than an installable Python package.
+package = false
+
+# Pin PyTorch to the CUDA 12.6 wheel index. The RTX 3080 supports this CUDA
+# build; the host NVIDIA driver must still be new enough to load it.
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
