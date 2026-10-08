@@ -34,7 +34,7 @@ class G1RunEnv(gym.Env):
     RIGHT_ANKLE_BODY = 13
     STANDING_FOOT_Z = 0.033
 
-    def __init__(self, render_mode=None, target_speed=2.0):
+    def __init__(self, render_mode=None, target_speed=3.0):
         super().__init__()
         self.render_mode = render_mode
         self.target_speed = float(target_speed)
@@ -237,6 +237,7 @@ class G1RunEnv(gym.Env):
 
         return float(np.exp(-4.0 * shoulder_error - 1.0 * elbow_error))
 
+    # 
     def _get_reward(self, action):
         forward_velocity = float(self.data.qvel[0])
         lateral_velocity = float(self.data.qvel[1])
@@ -288,6 +289,7 @@ class G1RunEnv(gym.Env):
             "action_rate_penalty": action_rate_penalty,
         }
         return float(sum(reward_terms.values())), reward_terms
+
 
     def _is_terminated(self):
         if self.data.qpos[2] < self.min_height:

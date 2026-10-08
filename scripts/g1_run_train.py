@@ -11,10 +11,11 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
 from g1_run_env import G1RunEnv
+from g1_run_env_new import G1RunEnv_new
 
 
-TARGET_SPEED = 2.0
-TOTAL_TIMESTEPS = 100_000_000
+TARGET_SPEED = 4.0
+TOTAL_TIMESTEPS = 50_000_000
 SEED = 42
 
 # 直接在这里设置并行环境数量
@@ -27,7 +28,7 @@ def make_env(rank):
     """创建一个具有独立随机种子的 MuJoCo 环境。"""
 
     def _init():
-        env = G1RunEnv(target_speed=TARGET_SPEED)
+        env = G1RunEnv_new(target_speed=TARGET_SPEED)
         env.reset(seed=SEED + rank)
         return env
 
@@ -49,9 +50,9 @@ def make_vector_env():
     )
 
 def main():
-    model_path = os.path.join(SCRIPT_DIR, "g1_run_final.zip")
-    norm_path = os.path.join(SCRIPT_DIR, "g1_run_vecnorm.pkl")
-    checkpoint_dir = os.path.join(SCRIPT_DIR, "g1_run_checkpoints")
+    model_path = os.path.join(SCRIPT_DIR, "g1_run_final_4.zip")
+    norm_path = os.path.join(SCRIPT_DIR, "g1_run_vecnorm_4.pkl")
+    checkpoint_dir = os.path.join(SCRIPT_DIR, "g1_run_checkpoints_4")
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     model_exists = os.path.exists(model_path)
@@ -119,7 +120,7 @@ def main():
     # 因此需要除以 NUM_ENVS。
     checkpoint_callback = CheckpointCallback(
         save_freq=max(
-            10_000_000 // NUM_ENVS,
+            1_000_000 // NUM_ENVS,
             1,
         ),
         save_path=checkpoint_dir,

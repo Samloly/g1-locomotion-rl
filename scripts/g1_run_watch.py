@@ -13,15 +13,15 @@ import mujoco
 import mujoco.viewer
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+import numpy as np
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
 from g1_run_env import G1RunEnv
-
-
-TARGET_SPEED = 2.0
+from g1_run_env_new import G1RunEnv_new
+TARGET_SPEED = 4.0
 
 
 def _checkpoint_step(filename):
@@ -31,8 +31,8 @@ def _checkpoint_step(filename):
 
 def find_model_and_normalization():
     """Prefer the final pair; otherwise select the latest complete checkpoint."""
-    final_model = os.path.join(SCRIPT_DIR, "g1_run_final.zip")
-    final_norm = os.path.join(SCRIPT_DIR, "g1_run_vecnorm.pkl")
+    final_model = os.path.join(SCRIPT_DIR, "g1_run_final_4.zip")
+    final_norm = os.path.join(SCRIPT_DIR, "g1_run_vecnorm_4.pkl")
 
     if os.path.exists(final_model) and os.path.exists(final_norm):
         return final_model, final_norm
@@ -71,7 +71,7 @@ def main():
     print(f"Loading normalization: {norm_path}")
 
     base_env = DummyVecEnv(
-        [lambda: G1RunEnv(target_speed=TARGET_SPEED)]
+        [lambda: G1RunEnv_new(target_speed=TARGET_SPEED)]
     )
     inner_env = base_env.envs[0]
 
@@ -87,6 +87,15 @@ def main():
     print("Close the MuJoCo viewer to stop.")
 
     with mujoco.viewer.launch_passive(inner_env.model, inner_env.data) as viewer:
+        viewer.cam.type = (
+            mujoco.mjtCamera.mjCAMERA_TRACKING
+        )
+        viewer.cam.trackbodyid = (
+            inner_env.pelvis_body_id
+        )
+        viewer.cam.distance = 3.0
+        viewer.cam.azimuth = 135.0
+        viewer.cam.elevation = -15.0
         episode = 0
 
         while viewer.is_running():
@@ -114,7 +123,7 @@ def main():
                 observation, reward, done, infos = env.step(action)
 
                 last_info = infos[0]
-                total_reward += float(reward[0])
+                total_reward += float(np.asarray(reward).reshape(-1)[0])
                 final_x = float(last_info["x_position"])
                 final_height = float(last_info["height"])
 
@@ -143,14 +152,11 @@ def main():
 
             if last_info.get("reward_terms"):
                 terms = last_info["reward_terms"]
-                print(
-                    "  final reward terms: "
-                    f"speed={terms['speed']:.2f}, "
-                    f"gait={terms['gait']:.2f}, "
-                    f"flight={terms['flight']:.2f}, "
-                    f"arm={terms['arm_swing']:.2f}, "
-                    f"posture={terms['posture']:.2f}"
+                summary = ", ".join(
+                    f"{name}={value:.2f}"
+                    for name, value in terms.items()
                 )
+                print(f"  final reward terms: {summary}")
 
             time.sleep(0.8)
 
